@@ -18,7 +18,7 @@ fn main() {
             
     let noti = Notification::new(get_time().as_secs() + 2, "This");
 
-    let node = Node::<i32>::new();
+    let mut node = Node::<i32>::new();
     node.put_at(12, 12);
 
 

@@ -29,11 +29,7 @@ impl<'a, T: Copy> Node<T> {
         };
     }
 
-    fn create_child(&'a mut self, switch: i32) -> Result<&str, &str> {
-
-        /*
-            Returns self
-        */
+    fn create_child(&'a mut self, index: usize) -> Result<&str, &str> {
 
         // basically a function, it's called a closure
         let mut execute = |loc: usize| {
@@ -45,7 +41,7 @@ impl<'a, T: Copy> Node<T> {
             self.children[loc] = Box::new(Some(child_node)); 
         };
 
-        match switch {
+        match index {
             
             0 => {
                 execute(0);
@@ -55,7 +51,7 @@ impl<'a, T: Copy> Node<T> {
                 execute(1);
                 Ok("ok")
                 },
-            i32::MIN..=i32::MAX => Err("The node children needs a number 0 or 1"),   
+            _ => Err("The node children needs a number 0 or 1"),   
         }
     }
 
@@ -101,7 +97,7 @@ impl<'a, T: Copy> Node<T> {
     }
 
 
-    pub fn put_at(& mut self, item: T, index: usize) {
+    pub fn put_at(&mut self, item: T, index: usize) {
         
         let bits = 63; // this is the max (right or left non overflowing) bit-shift possible on usize
 
@@ -109,20 +105,18 @@ impl<'a, T: Copy> Node<T> {
             Follow the Node tree down
         */
 
-        let mut current_node: &mut Node<T> = self;
+        let mut current_node = self;
         // start at the maximum possible bit-shift then work down
         for i in (0..bits).rev() {
 
             // decides if you take child 1 or 0
-            let loc_index = index & (1 << i);
-            // get the child
-            let child: &mut Option<Node<T>> = current_node.get_child(loc_index);                
-            
-            match child {
+            let loc_index = index & (1 << i);    
+
+            match current_node.get_child(loc_index) {
                 // Some means that there are more children to search through
                 Some(x) => current_node = x,
                 // None means that we have reached the end of the tree
-                None => break, // I don't think this break is needed, it should be the last iteration of the for loop
+                None => {current_node.create_child(loc_index);},
             };
         }
         current_node.contents = Some(item);
